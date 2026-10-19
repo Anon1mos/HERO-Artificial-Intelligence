@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="ciano">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HERO</title>
+<style>
+:root{--rgb:56,232,255;--bg:#02060d;--glow:#06324a;--text:#d8f6ff;--dim:#7ea6b8;--warm:#ffd166;--ok:#3dffa7;
+--accent:rgb(var(--rgb));--line:rgba(var(--rgb),.22);--line2:rgba(var(--rgb),.55);--panel:rgba(5,16,28,.74);--panel2:rgba(10,32,50,.8);
+--mono:"Cascadia Code","Cascadia Mono",Consolas,"Courier New",monospace}
+[data-theme=verde]{--rgb:57,255,136;--glow:#063a22;--text:#d9ffe9;--dim:#7fb596}
+[data-theme=ambar]{--rgb:255,176,46;--glow:#3d2606;--text:#fff1da;--dim:#b89a72}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{height:100%;overflow:hidden}
+body{margin:0;background:radial-gradient(ellipse at 50% 30%,var(--glow) 0,var(--bg) 68%);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:
+ linear-gradient(rgba(var(--rgb),.055) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(var(--rgb),.055) 1px,transparent 1px) 0 0/44px 44px;
+ -webkit-mask-image:radial-gradient(ellipse at 50% 40%,#000 10%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 40%,#000 10%,transparent 75%)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
+.app{position:relative;z-index:1;height:100%;display:flex}
+.rail{width:78px;flex:none;border-right:1px solid var(--line);background:rgba(2,8,16,.7);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px}
+.logo{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line2);color:var(--accent);font:700 18px var(--mono);margin-bottom:14px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:rgba(var(--rgb),.1)}
+.nv{width:64px;padding:8px 0 6px;background:none;border:0;border-left:2px solid transparent;color:var(--dim);font:11px var(--mono);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nv:hover{color:var(--text)}
+.nv.on{color:var(--accent);border-left-color:var(--accent);background:linear-gradient(90deg,rgba(var(--rgb),.16),transparent)}
+.rail .sp{flex:1}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--warm);outline-offset:2px}
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--line)}
+.word{font:700 18px var(--mono);letter-spacing:.45em;color:var(--accent);text-shadow:0 0 14px rgba(var(--rgb),.7)}
+.path{font:13px var(--mono);color:var(--dim)}
+.sp{flex:1}
+#clock{font:14px var(--mono);color:var(--dim)}
+.pill{background:rgba(var(--rgb),.07);border:1px solid var(--line);color:var(--text);border-radius:3px;padding:6px 12px;font:12px var(--mono);cursor:pointer}
+.pill:hover{border-color:var(--line2);box-shadow:0 0 12px rgba(var(--rgb),.25)}
+.pill.on{border-color:var(--ok);color:var(--ok)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:2px 9px;font:12px var(--mono);color:var(--dim)}
+.btn{background:rgba(var(--rgb),.18);border:1px solid var(--line2);color:var(--accent);border-radius:3px;padding:8px 16px;font:600 13px var(--mono);cursor:pointer;box-shadow:0 0 14px rgba(var(--rgb),.2)}
+.btn:hover{background:rgba(var(--rgb),.3)}
+section{display:none;flex:1;min-height:0;flex-direction:column}section.on{display:flex}
+/* chat */
+#chat{padding:0 24px 20px;align-items:center}
+.stage{margin-top:auto;text-align:center}
+canvas.orb{width:360px;height:360px;transition:width .5s,height .5s;filter:drop-shadow(0 0 22px rgba(var(--rgb),.45))}
+.stage h1{margin:-10px 0 4px;font:300 30px "Segoe UI Light","Segoe UI",sans-serif;letter-spacing:.06em}
+.stage p{margin:0 0 18px;color:var(--dim);font:13px var(--mono)}
+#chat.started .stage{margin:6px 0 0}
+#chat.started canvas.orb{width:120px;height:120px}
+#chat.started .stage h1,#chat.started .stage p,#chat.started .sugs{display:none}
+#msgs{display:none;flex:1;width:100%;max-width:780px;overflow-y:auto;flex-direction:column;gap:10px;padding:8px 2px 12px}
+#chat.started #msgs{display:flex}
+.m{max-width:86%;padding:10px 14px;white-space:pre-wrap;background:var(--panel);border:1px solid var(--line)}
+.m.user{align-self:flex-end;border-color:var(--line2);background:rgba(var(--rgb),.1)}
+.m.bot{align-self:flex-start;border-left:2px solid var(--accent)}
+.m.err{border-left-color:#ff5d73;color:#ffb3bd}
+.m .chip{margin:8px 6px 0 0}
+.composer{width:100%;max-width:720px;border:1px solid var(--line2);background:var(--panel);box-shadow:0 0 28px rgba(var(--rgb),.16);position:relative}
+.composer::before,.composer::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--accent)}
+.composer::before{left:-3px;top:-3px;border-right:0;border-bottom:0}.composer::after{right:-3px;bottom:-3px;border-left:0;border-top:0}
+#chat.started .composer{margin-top:auto}
+.composer textarea{width:100%;height:54px;resize:none;background:none;border:0;color:var(--text);font:inherit;padding:12px 14px 0;outline:0}
+.composer textarea::placeholder{color:var(--dim)}
+.tools{display:flex;align-items:center;gap:8px;padding:6px 10px 10px}.tools .chip{margin-right:auto}
+.ic{width:36px;height:36px;display:grid;place-items:center;background:none;border:1px solid var(--line);color:var(--accent);cursor:pointer;border-radius:3px}
+.ic:hover{border-color:var(--line2)}.ic.on{border-color:var(--warm);color:var(--warm)}
+.ic.go{background:rgba(var(--rgb),.2);border-color:var(--line2)}
+.sugs{width:100%;max-width:720px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 auto}
+.sug{text-align:left;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:11px 13px;font:inherit;cursor:pointer}
+.sug:hover{border-color:var(--line2);box-shadow:0 0 14px rgba(var(--rgb),.2)}
+.sug b{display:block;font-weight:600;color:var(--accent)}.sug span{color:var(--dim);font-size:13px}
+/* páginas */
+.page{flex:1;overflow-y:auto;padding:18px 24px 24px}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);padding:16px 18px;margin-bottom:14px}
+.card::before{content:"";position:absolute;left:-1px;top:-1px;width:12px;height:12px;border-left:2px solid var(--accent);border-top:2px solid var(--accent)}
+.card h3{margin:0 0 4px;font:600 13px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.hint{margin:0 0 12px;color:var(--dim);font-size:13px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px;margin-bottom:14px}
+.kpi{position:relative;background:var(--panel);border:1px solid var(--line);padding:14px}
+.kpi::before{content:"";position:absolute;left:-1px;top:-1px;width:12px;height:12px;border-left:2px solid var(--accent);border-top:2px solid var(--accent)}
+.kpi span{color:var(--dim);font:12px var(--mono)}.kpi b{display:block;font:300 34px var(--mono);color:var(--accent);line-height:1.2;text-shadow:0 0 14px rgba(var(--rgb),.5)}.kpi small{color:var(--dim)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.list{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.list a{color:var(--text);text-decoration:none}.list a:hover{color:var(--accent)}.list small{color:var(--dim)}
+.sum{white-space:pre-wrap;margin:10px 0}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field input[type=password],.field input[type=text],.field input[type=number],.field input[type=time],.field textarea,.field select{background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);padding:9px 11px;font:inherit}
+.field textarea{min-height:76px;resize:vertical}
+.check{display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.note{border:1px solid var(--line);background:rgba(var(--rgb),.06);padding:8px 12px;font-size:13px;color:var(--dim);margin-bottom:12px}
+.log{display:flex;gap:14px;color:var(--dim);font:13px var(--mono);padding:3px 0}.log b{color:var(--accent);font-weight:400}
+.toast{margin-left:12px;color:var(--ok);font:13px var(--mono)}
+/* controle por mãos */
+#camBox{position:fixed;right:18px;bottom:18px;z-index:50;width:272px;background:var(--panel);border:1px solid var(--line2);padding:8px;box-shadow:0 0 30px rgba(var(--rgb),.25)}
+.camhead{display:flex;justify-content:space-between;align-items:center;font:11px var(--mono);color:var(--accent);margin-bottom:6px}
+.camview{position:relative;width:100%;aspect-ratio:4/3;background:#000;transform:scaleX(-1);overflow:hidden}
+.camview video,.camview canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.camview video{opacity:.55}
+#handStat{margin-top:6px;font:12px var(--mono);color:var(--ok)}
+.camhelp{font:11px/1.4 var(--mono);color:var(--dim);margin-top:4px}
+#hcur{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border:2px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9999;box-shadow:0 0 16px rgba(var(--rgb),.9),inset 0 0 8px rgba(var(--rgb),.5);transition:width .1s,height .1s,margin .1s,background .1s}
+#hcur::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--accent)}
+#hcur.pinch{width:20px;height:20px;margin:-10px 0 0 -10px;background:rgba(var(--rgb),.45)}
+#hcur.scroll{border-style:dashed;border-color:var(--warm)}
+.hh{outline:2px solid var(--accent)!important;outline-offset:2px;box-shadow:0 0 18px rgba(var(--rgb),.5)}
+.rip{position:fixed;width:12px;height:12px;margin:-6px;border:2px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9998;animation:rip .5s ease-out forwards}
+@keyframes rip{to{transform:scale(5);opacity:0}}
+#zoomCtl{display:flex;align-items:center;gap:4px;font:12px var(--mono);color:var(--dim)}
+#zoomCtl .pill{padding:3px 9px}
+#htoast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9997;background:var(--panel);border:1px solid var(--line2);padding:8px 18px;font:14px var(--mono);color:var(--accent);box-shadow:0 0 24px rgba(var(--rgb),.4)}
+#camBox.big{width:520px}
+.camctl{display:flex;flex-direction:column;gap:2px;margin-top:6px;font:11px var(--mono);color:var(--dim)}
+.camctl input{width:100%;accent-color:var(--accent)}
+.item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.item .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item.done .grow{text-decoration:line-through;color:var(--dim)}
+.addrow{display:flex;gap:8px;margin-bottom:10px}
+.addrow input{flex:1;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);padding:8px 10px;font:inherit}
+#hcur.pause{opacity:.45!important;border-style:dotted}
+#hcur.zoom{border-color:var(--warm);box-shadow:0 0 16px var(--warm)}
+@media(max-width:760px){.rail{width:56px}.nv{width:50px;font-size:9px}.sugs{grid-template-columns:1fr}canvas.orb{width:260px;height:260px}#share,#clock{display:none}}
+@media(prefers-reduced-motion:reduce){.rip{animation:none;display:none}}
+#auth{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 30%,var(--glow) 0,var(--bg) 70%)}
+.authcard{width:min(380px,92vw);background:var(--panel);border:1px solid var(--line2);padding:26px;box-shadow:0 0 40px rgba(var(--rgb),.25);display:flex;flex-direction:column;gap:8px}
+.authcard h2{margin:6px 0 2px;font:300 24px "Segoe UI Light","Segoe UI",sans-serif}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+#repMonth{background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);padding:6px 10px;font:inherit}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="rail">
+  <div class="logo">H</div>
+  <button class="nv on" data-p="chat" data-i="chat" aria-label="Chat"><span>chat</span></button>
+  <button class="nv" data-p="brief" data-i="dash" aria-label="Briefing"><span>briefing</span></button>
+  <button class="nv" data-p="report" data-i="rep" aria-label="Relatório"><span>relatório</span></button>
+  <button class="nv" data-p="hist" data-i="hist" aria-label="Histórico"><span>histórico</span></button>
+  <button class="nv" data-p="logs" data-i="logs" aria-label="Logs"><span>logs</span></button>
+  <div class="sp"></div>
+  <button class="nv" data-p="conf" data-i="cog" aria-label="Configurações"><span>config</span></button>
+</aside>
+<main>
+  <header class="top">
+    <span class="word">HERO</span><span class="path" id="title">// chat</span><span class="sp"></span>
+    <span id="zoomCtl"><button class="pill" id="zOut" aria-label="Diminuir zoom">−</button><span id="zVal">100%</span><button class="pill" id="zIn" aria-label="Aumentar zoom">+</button></span><span id="clock"></span><span class="chip" id="model"></span>
+    <span class="chip" id="userChip"></span><button class="pill" id="logoutBtn">Sair</button>
+    <button class="pill" id="handBtn" aria-pressed="false">Mãos: desligado</button>
+    <button class="pill" id="newchat">Nova conversa</button>
+    <button class="pill" id="share">Copiar conversa</button>
+  </header>
+
+  <section id="chat" class="on">
+    <div class="stage"><canvas class="orb" width="400" height="400" aria-hidden="true"></canvas>
+      <h1 id="greet">Vamos lá?</h1><p>pergunte qualquer coisa ou peça o briefing</p></div>
+    <div id="msgs"></div>
+    <div class="composer">
+      <textarea id="q" placeholder="Digite um comando..." aria-label="Mensagem"></textarea>
+      <div class="tools">
+        <button class="ic" id="spk" data-i="spk" aria-label="Ler respostas em voz alta" title="Ler respostas em voz alta"></button>
+        <button class="ic" id="ear" data-i="ear" aria-label="Escuta contínua: diga HERO e o comando" aria-pressed="false" title="Escuta contínua: diga HERO e o comando"></button>
+        <button class="ic" id="mic" data-i="mic" aria-label="Falar" title="Falar"></button>
+        <button class="ic go" id="send" data-i="send" aria-label="Enviar"></button>
+      </div>
+    </div>
+    <div class="sugs">
+      <button class="sug" data-brief="1"><b>Briefing do dia</b><span>Agenda, e-mails, notícias e clima</span></button>
+      <button class="sug" data-q="Me ajude a organizar minhas tarefas de hoje."><b>Planejar o dia</b><span>Organizar tarefas</span></button>
+      <button class="sug" data-q="Explique o que é uma API em poucas palavras."><b>Aprender algo</b><span>O que é uma API?</span></button>
+    </div>
+  </section>
+
+  <section id="brief"><div class="page">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+      <span class="hint" style="margin:0;flex:1" id="briefDate"></span>
+      <button class="pill" id="refresh">Atualizar</button><button class="pill" id="toConf">Configurar</button>
+    </div>
+    <div class="grid4" id="kpis"></div>
+    <div class="card"><h3>Resumo executivo falável</h3><p class="hint">Consolida agenda, e-mails, notícias e clima em um texto pronto para leitura.</p>
+      <button class="btn" id="genNow">Gerar agora</button> <button class="pill" id="hearIt" style="display:none">Ouvir</button>
+      <div class="sum" id="sumOut"></div></div>
+    <div class="card"><h3>Tarefas do dia</h3>
+      <div class="addrow"><input type="text" id="taskIn" placeholder="Nova tarefa" aria-label="Nova tarefa"><button class="pill" id="taskAdd">Adicionar</button></div>
+      <div id="taskList"></div></div>
+    <div class="two">
+      <div class="card"><h3>Agenda</h3><ul class="list" id="agendaList"></ul></div>
+      <div class="card"><h3>Caixa de entrada</h3><div id="mailList"></div></div>
+    </div>
+    <div class="two" id="newsGrid"></div>
+  </div></section>
+
+  <section id="report"><div class="page">
+    <div class="toolbar">
+      <button class="pill" id="repPrev" aria-label="Mês anterior">◀</button>
+      <select id="repMonth" aria-label="Mês do relatório"></select>
+      <button class="pill" id="repNext" aria-label="Próximo mês">▶</button>
+      <span class="sp"></span>
+      <button class="pill" id="repRefresh">Atualizar</button>
+      <button class="pill" id="repAI">Gerar análise com IA</button>
+      <button class="pill" id="repDl">Baixar HTML</button>
+      <button class="pill" id="repPrint">Imprimir / PDF</button>
+    </div>
+    <div id="reportBody"></div>
+  </div></section>
+
+  <section id="hist"><div class="page" id="histOut"></div></section>
+
+  <section id="logs"><div class="page" id="logOut"></div></section>
+
+  <section id="conf"><div class="page" style="max-width:780px">
+    <div class="card"><h3>Conta</h3><div class="note" id="acctNote"></div>
+      <div class="field"><label for="cp_cur">Senha atual</label><input type="password" id="cp_cur" autocomplete="current-password"></div>
+      <div class="field"><label for="cp_new">Nova senha (mínimo 8 caracteres)</label><input type="password" id="cp_new" autocomplete="new-password" minlength="8"></div>
+      <button class="pill" id="cpGo">Alterar senha</button> <button class="pill" id="logoutBtn2">Sair desta conta</button></div>
+    <div class="card"><h3>Controle por mãos</h3>
+      <div class="note">A câmera é processada no seu navegador; a imagem não é enviada a lugar nenhum. Só o modelo de reconhecimento é baixado da internet na primeira vez.</div>
+      <label class="check"><input type="checkbox" id="s_hands"> Ligar o controle por mãos ao abrir a HERO</label>
+      <div class="hint">Sensibilidade e suavidade ficam na janela da câmera, para você ajustar enquanto usa.</div></div>
+    <div class="card"><h3>Personalização do briefing</h3>
+      <div class="field"><label for="s_nick">Como a HERO deve te chamar</label><input type="text" id="s_nick" maxlength="30"></div>
+      <div class="field"><label for="s_tone">Tom do resumo</label><select id="s_tone"><option value="profissional">Profissional</option><option value="casual">Casual</option><option value="sarcastico">Sarcástico</option></select></div>
+      <label class="check"><input type="checkbox" id="s_focus"> Terminar com uma sugestão de foco do dia</label>
+      <label class="check"><input type="checkbox" id="s_tasks"> Incluir minhas tarefas no resumo</label>
+      <div class="field"><label for="s_autotime">Gerar o briefing automaticamente neste horário (com a HERO aberta)</label><input type="time" id="s_autotime"></div>
+      <div class="field"><label for="s_rate">Velocidade da voz (0,6 a 1,6)</label><input type="number" id="s_rate" min="0.6" max="1.6" step="0.1"></div>
+      <div class="field"><label for="s_voice">Voz da HERO</label><select id="s_voice"></select>
+        <div class="hint">Se só houver vozes masculinas na lista, instale uma voz feminina no Windows: Configurações &gt; Hora e idioma &gt; Fala &gt; Adicionar vozes &gt; Português (Brasil). No Edge também há a voz natural “Francisca”.</div></div>
+      <button class="pill" type="button" id="voiceTest">Testar voz</button></div>
+    <div class="card"><h3>Agendas</h3>
+      <div class="note">Use o endereço iCal privado do seu calendário. Ele fica salvo apenas neste computador e é usado somente para leitura.</div>
+      <label class="check"><input type="checkbox" id="s_agenda"> Incluir agenda no briefing</label>
+      <div class="field"><label for="s_agdays">Dias à frente (1 a 7)</label><input type="number" id="s_agdays" min="1" max="7"></div>
+      <div class="field"><label for="s_ical">Endereços iCal (um por linha)</label><textarea id="s_ical"></textarea></div></div>
+    <div class="card"><h3>Contas de e-mail</h3><div class="note" id="mailNote"></div>
+      <label class="check"><input type="checkbox" id="s_email"> Incluir triagem de e-mails no briefing</label>
+      <label class="check"><input type="checkbox" id="s_emunread"> Analisar só e-mails não lidos</label>
+      <div class="field"><label for="s_emlimit">Quantos e-mails analisar (5 a 30)</label><input type="number" id="s_emlimit" min="5" max="30"></div></div>
+    <div class="card"><h3>Radar e contexto</h3>
+      <label class="check"><input type="checkbox" id="s_news"> Incluir notícias</label>
+      <div class="field"><label for="s_kw">Assuntos das notícias (separados por vírgula, vazio mostra tudo)</label><input type="text" id="s_kw" placeholder="tecnologia, novos modelos de IA, política"></div>
+      <div class="field"><label for="s_feeds">Fontes de notícias (uma por linha, no formato Categoria=endereço RSS)</label><textarea id="s_feeds"></textarea></div>
+      <div class="field"><label for="s_count">Notícias por fonte (1 a 10)</label><input type="number" id="s_count" min="1" max="10"></div>
+      <label class="check"><input type="checkbox" id="s_weather"> Clima ativo</label>
+      <label class="check"><input type="checkbox" id="s_wextra"> Mostrar umidade, vento e índice UV</label>
+      <div class="field"><label for="s_city">Localidade</label><input type="text" id="s_city"></div>
+      <div class="field"><label for="s_refresh">Atualização automática do painel, em minutos (0 desliga)</label><input type="number" id="s_refresh" min="0" max="120"></div></div>
+    <div class="card"><h3>Briefing falado e aparência</h3>
+      <label class="check"><input type="checkbox" id="s_auto"> Gerar o briefing ao abrir a HERO</label>
+      <label class="check"><input type="checkbox" id="s_read"> Ler respostas em voz alta</label>
+      <div class="field"><label for="s_speech">O que a HERO fala</label><select id="s_speech"><option value="essencial">Só o essencial (sem símbolos, poucas frases)</option><option value="completo">Texto completo (sem símbolos)</option></select></div>
+      <div class="field"><label for="s_detail">Tamanho do resumo</label><select id="s_detail"><option value="curto">Curto (até 5 linhas)</option><option value="completo">Completo (comenta cada item)</option></select></div>
+      <div class="field"><label for="s_theme">Cor do HUD</label><select id="s_theme"><option value="ciano">Ciano</option><option value="verde">Verde</option><option value="ambar">Âmbar</option></select></div></div>
+    <button class="pill" id="cancelSet">Cancelar</button> <button class="btn" id="saveSet">Salvar alterações</button><span class="toast" id="toast"></span>
+  </div></section>
+</main>
+</div>
+
+<div id="auth" hidden>
+  <form id="authForm" class="authcard" autocomplete="on">
+    <div class="word">HERO</div>
+    <h2 id="authTitle">Entrar</h2>
+    <p class="hint" id="authHint"></p>
+    <div class="field"><label for="a_user">Usuário</label><input type="text" id="a_user" autocomplete="username" required minlength="3" maxlength="32"></div>
+    <div class="field"><label for="a_pass">Senha</label><input type="password" id="a_pass" autocomplete="current-password" required minlength="8" maxlength="128"></div>
+    <div class="field" id="a_confRow" hidden><label for="a_conf">Repita a senha</label><input type="password" id="a_conf" autocomplete="new-password" minlength="8" maxlength="128"></div>
+    <div class="note" id="authMsg" role="alert" hidden></div>
+    <button class="btn" type="submit" id="authGo">Entrar</button>
+    <button class="pill" type="button" id="authSwitch" hidden>Criar conta</button>
+  </form>
+</div>
+<div id="camBox" hidden>
+  <div class="camhead"><span>CONTROLE POR MÃOS</span><span><button class="pill" id="camSize">Ampliar</button> <button class="pill" id="handOff">Desligar</button></span></div>
+  <div class="camview"><video id="cam" playsinline muted></video><canvas id="camfx" width="640" height="480"></canvas></div>
+  <div id="handStat">Iniciando...</div>
+  <div class="camctl"><label for="hSens">Sensibilidade</label><input type="range" id="hSens" min="0.5" max="3.5" step="0.1">
+    <label for="hSmooth">Suavidade</label><input type="range" id="hSmooth" min="0" max="1" step="0.05"></div>
+  <div class="camhelp">Indicador: mover · Pinça: clicar (segure e arraste para rolar ou trocar de página) · Indicador + médio: rolar · Punho: pausar · Palma: deslize para o lado para trocar de página · Duas mãos em pinça: zoom</div>
+</div>
+<div id="hcur" hidden></div>
+<div id="htoast" hidden></div>
+
+<script src="/static/report.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const I={chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+dash:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',
+hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+rep:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+logs:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+cog:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>',
+send:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>',
+spk:'<path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
+ear:'<path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/>'};
+document.querySelectorAll("[data-i]").forEach(e=>e.insertAdjacentHTML("afterbegin",
+ `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[e.dataset.i]}</svg>`));
+function el(tag,text,cls){const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e}
+const post=(u,b)=>fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:b?JSON.stringify(b):undefined});
+async function api(url,opt){ // verifica o status e padroniza a mensagem de erro
+  let r;try{r=await fetch(url,opt)}catch(e){throw new Error("Sem conexão com o servidor da HERO.")}
+  let j=null;try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j&&typeof j.detail==="string"?j.detail:`Erro ${r.status}`);
+  return j;
+}
+const jsonOpt=b=>({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
+const _fetch=window.fetch.bind(window);   // qualquer 401 fora de /api/auth abre a tela de login
+window.fetch=async(...a)=>{const r=await _fetch(...a);if(r.status===401&&!String(a[0]).startsWith("/api/auth/"))showAuth();return r};
+const track=ev=>{api("/api/events",jsonOpt(ev)).catch(()=>{})};
+
+let history=[],speak=false,state="idle",cur="chat",S={},timer=null,lastSummary="",curConv=null,busy=false,USER=null,lastCmdName="",authShown=false;
+const PAGES=["chat","brief","report","hist","logs","conf"];
+const TITLES={chat:"// chat",brief:"// seu briefing do dia",report:"// relatório mensal",hist:"// histórico",logs:"// logs",conf:"// configurações"};
+const hr=new Date().getHours();
+const greeting=()=>(hr<12?"Bom dia":hr<18?"Boa tarde":"Boa noite")+(S.nickname?", "+S.nickname:"")+". Vamos lá?";
+$("#greet").textContent=greeting();
+setInterval(()=>$("#clock").textContent=new Date().toLocaleTimeString("pt-BR"),1000);
+
+function go(p){
+  cur=p;
+  document.querySelectorAll(".rail .nv").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===p));
+  $("#title").textContent=TITLES[p];
+  $("#newchat").style.display=$("#share").style.display=p==="chat"?"":"none";
+  if(p==="logs")loadLogs();
+  if(p==="brief")loadDash(false);
+  if(p==="report")loadReport();
+  if(p==="hist")loadHist();
+  if(p==="conf")fillConf();
+}
+document.querySelectorAll(".rail .nv").forEach(b=>b.onclick=()=>go(b.dataset.p));
+
+// ---------- zoom da interface ----------
+let zSave=null;
+function setZoom(z,save=true){
+  z=Math.min(1.6,Math.max(.7,Math.round(z*100)/100));S.ui_zoom=z;
+  $("main").style.zoom=z;$("#zVal").textContent=Math.round(z*100)+"%";
+  if(save){clearTimeout(zSave);zSave=setTimeout(()=>saveMerge({ui_zoom:z}),600)}
+}
+$("#zIn").onclick=()=>setZoom((S.ui_zoom||1)+.1);$("#zOut").onclick=()=>setZoom((S.ui_zoom||1)-.1);
+async function saveMerge(o){Object.assign(S,o);try{await api("/api/settings",jsonOpt(S))}catch(e){toast("Não consegui salvar as configurações: "+e.message,3500)}}
+
+// ---------- conversas salvas ----------
+async function ensureConv(){if(!curConv)curConv=(await api("/api/conversations",{method:"POST"})).id;return curConv}
+async function persistTo(cid,list){ // grava sempre na conversa que originou a mensagem
+  try{await api(`/api/conversations/${cid}/messages`,jsonOpt({messages:list}));return true}
+  catch(e){toast("Não consegui salvar no histórico: "+e.message,4000);return false}
+}
+async function openConv(id){
+  const r=await (await fetch("/api/conversations/"+id)).json();
+  curConv=id;history=r;$("#msgs").innerHTML="";
+  r.forEach(m=>add(m.content,m.role==="user"?"user":"bot"));
+  if(r.length)start();else $("#chat").classList.remove("started");
+  go("chat");
+}
+async function loadHist(){
+  const box=$("#histOut");box.innerHTML="";
+  const l=await (await fetch("/api/conversations")).json();
+  if(!l.length)box.append(el("p","Nenhuma conversa salva ainda.","hint"));
+  l.forEach(c=>{
+    const row=el("div",null,"item");
+    row.append(el("span",c.title,"grow"),el("small",new Date(c.updated*1000).toLocaleString("pt-BR"),"hint"));
+    const o=el("button","Abrir","pill");o.onclick=()=>openConv(c.id);
+    const d=el("button","Apagar","pill");d.onclick=async()=>{await fetch("/api/conversations/"+c.id,{method:"DELETE"});if(curConv===c.id){curConv=null;history=[];$("#msgs").innerHTML="";$("#chat").classList.remove("started")}loadHist()};
+    row.append(o,d);box.append(row);
+  });
+}
+
+// ---------- chat ----------
+const start=()=>$("#chat").classList.add("started");
+function add(text,cls){const d=el("div",text,"m "+cls);$("#msgs").append(d);d.scrollIntoView({block:"end"});return d}
+async function send(text,viaVoice=false){
+  text=text.trim();if(!text)return;
+  if(viaVoice)track({kind:"voice"});
+  let c=null;try{c=await tryCommand(text)}catch(e){toast("Não consegui executar o comando.",2500);return}
+  if(c!==null){
+    track({kind:"command",name:lastCmdName});
+    if(c&&c.chat){go("chat");start();add(text,"user");add(c.chat,"bot");toast(c.msg,2200);say(c.msg,"cmd",viaVoice)}
+    else if(c){toast(c,2200);say(c,"cmd",viaVoice)}
+    return;
+  }
+  if(/\bbriefing\b/i.test(text))return runBriefing(text,viaVoice);
+  if(busy){toast("Aguarde a resposta anterior.",2000);return}
+  busy=true;go("chat");start();add(text,"user");
+  const wait=add("Processando...","bot");state="think";
+  try{
+    const cid=await ensureConv();
+    if(curConv===cid)history.push({role:"user",content:text});
+    const j=await api("/api/chat",jsonOpt({messages:history.slice(-30)}));
+    wait.remove();
+    await persistTo(cid,[{role:"user",content:text},{role:"assistant",content:j.reply}]);
+    if(curConv===cid){history.push({role:"assistant",content:j.reply});add(j.reply,"bot");say(j.reply,"reply",viaVoice)}
+    else toast("Resposta salva na conversa anterior.",2500);
+  }catch(e){wait.remove();add(e.message,"bot err")}
+  finally{busy=false;if(state==="think")state="idle"}
+}
+function chips(d){
+  const a=[],w=d.weather;
+  if(w&&!w.error)a.push(`${w.city}: ${w.tmin}°–${w.tmax}°C, chuva ${w.rain}%`);
+  if(d.agenda)a.push(d.agenda.length?`${d.agenda.length} compromisso(s)`:"Agenda livre");
+  if(d.emails)a.push(`${d.emails.attention.length} e-mail(s) pedem atenção`);
+  if(d.news&&d.news.length)a.push(`${d.news.length} manchetes`);
+  return a;
+}
+async function runBriefing(label="Briefing do dia",viaVoice=false){
+  if(busy){toast("Aguarde a resposta anterior.",2000);return}
+  busy=true;go("chat");start();add(label,"user");state="think";
+  const wait=add("Reunindo as informações...","bot");
+  try{
+    const cid=await ensureConv();
+    const j=await api("/api/briefing");wait.remove();
+    await persistTo(cid,[{role:"user",content:label},{role:"assistant",content:j.text}]);
+    lastSummary=j.text;
+    if(curConv===cid){
+      const d=add("","bot");d.append(el("div",j.text));chips(j.data).forEach(c=>d.append(el("span",c,"chip")));
+      history.push({role:"user",content:label},{role:"assistant",content:j.text});say(j.text,"brief",viaVoice);
+    }else toast("Briefing salvo na conversa anterior.",2500);
+  }catch(e){wait.remove();add("Falha ao gerar o briefing: "+e.message,"bot err")}
+  finally{busy=false;if(state==="think")state="idle"}
+}
+const submit=()=>{const t=$("#q").value;$("#q").value="";send(t)};
+$("#send").onclick=submit;
+$("#q").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();submit()}};
+document.querySelectorAll(".sug").forEach(b=>b.onclick=()=>b.dataset.brief?runBriefing():send(b.dataset.q));
+$("#newchat").onclick=()=>{curConv=null;history=[];$("#msgs").innerHTML="";$("#chat").classList.remove("started");stopSpeech();state="idle"};
+$("#share").onclick=async()=>{
+  const txt=history.map(m=>(m.role==="user"?"Você: ":"HERO: ")+m.content).join("\n\n");
+  try{await navigator.clipboard.writeText(txt);$("#share").textContent="Copiado"}catch(e){$("#share").textContent="Não foi possível copiar"}
+  setTimeout(()=>$("#share").textContent="Copiar conversa",1800);
+};
+
+// ---------- voz ----------
+function setSpeak(v){speak=v;$("#spk").classList.toggle("on",v);$("#spk").setAttribute("aria-pressed",v);if(!v)stopSpeech()}
+// ---------- voz da HERO (feminina) ----------
+const FEM=/francisca|maria|thalita|vit[oó]ria|helo[ií]sa|helena|giovanna|let[ií]cia|camila|fernanda|luciana|raquel|brenda|yara|manuela|google portugu[eê]s|feminin|female/i;
+const MASC=/ant[oô]nio|daniel|felipe|donato|humberto|ricardo|jorge|val[eé]rio|masculin|\bmale\b/i;
+const ptVoices=()=>{try{return (speechSynthesis.getVoices?speechSynthesis.getVoices():[]).filter(v=>/^pt/i.test(v.lang))}catch(e){return[]}};
+function pickVoice(name){ // o navegador não informa o gênero: escolho pelo nome, preferindo vozes femininas e naturais
+  const vs=ptVoices();if(!vs.length)return null;
+  const want=name===undefined?(voiceOverride!==null?voiceOverride:S.voice_name):name;
+  if(want){const v=vs.find(x=>x.name===want);if(v)return v}
+  const score=v=>(MASC.test(v.name)?-100:0)+(FEM.test(v.name)?50:0)+(/natural|neural|online/i.test(v.name)?20:0)+(/pt-BR/i.test(v.lang)?10:0)+(v.localService?1:0);
+  return vs.slice().sort((a,b)=>score(b)-score(a))[0];
+}
+function utter(t,name){const u=new SpeechSynthesisUtterance(t);u.lang="pt-BR";u.rate=S.voice_rate||1;const v=pickVoice(name);if(v){u.voice=v;u.lang=v.lang}return u}
+function fillVoices(){
+  const sel=$("#s_voice");if(!sel)return;
+  const keep=sel.value||S.voice_name||"";sel.innerHTML="";
+  const auto=el("option","Automática (prefere voz feminina)");auto.value="";sel.append(auto);
+  ptVoices().forEach(v=>{const o=el("option",`${v.name} (${v.lang})`);o.value=v.name;sel.append(o)});
+  sel.value=[...sel.options].some(o=>o.value===keep)?keep:"";
+}
+try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{if(cur==="conf")fillVoices()}}catch(e){}
+$("#spk").onclick=()=>setSpeak(!speak);
+$("#voiceTest").onclick=()=>{voiceOverride=$("#s_voice").value;say("Olá! Eu sou a HERO, sua assistente. Esta é a minha voz. Estou fazendo um teste com várias frases para conferir se a fala termina inteira. Se você ouviu até aqui, está tudo certo.","brief",true);setTimeout(()=>voiceOverride=null,600)};
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$("#mic").onclick=()=>{
+  if(contOn){toast("A escuta contínua está ligada: diga HERO e o comando.",2500);return}
+  if(!SR){go("chat");start();return add("Reconhecimento de voz não suportado. Use Chrome ou Edge.","bot err")}
+  const r=new SR();r.lang="pt-BR";state="listen";$("#mic").classList.add("on");
+  r.onresult=e=>send(e.results[0][0].transcript,true);
+  r.onend=()=>{$("#mic").classList.remove("on");if(state==="listen")state="idle"};
+  try{r.start()}catch(e){$("#mic").classList.remove("on");state="idle";toast("Não consegui acessar o microfone.",3000)}
+};
+
+// ---------- limpeza do texto falado ----------
+function speakable(t,max=3,chars=320){
+  const ess=(S.speech_mode||"essencial")!=="completo";
+  let src=String(t);
+  if(ess){const sem=src.replace(/^\s{0,3}#{1,6}[^\n]*\n?/gm,"");if(sem.trim())src=sem} // no modo essencial, títulos não gastam frases
+  let s=src
+   .replace(/```[\s\S]*?```/g," ").replace(/`([^`]*)`/g,"$1")
+   .replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/\[([^\]]+)\]\([^)]*\)/g,"$1")
+   .replace(/https?:\/\/\S+/g," ")
+   .replace(/^\s{0,3}#{1,6}\s*/gm,"").replace(/^\s*(?:[-*•+]|\d+[.)])\s+/gm,"")
+   .replace(/[\u{1F000}-\u{1FFFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu," ")
+   .replace(/[*_~`#>|^\\{}<>\[\]=]/g," ").replace(/[–—]/g,", ").replace(/\//g," ");
+  s=s.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>/[.!?…:;]$/.test(l)?l:l+".").join(" ").replace(/\s+/g," ").trim();
+  if((S.speech_mode||"essencial")==="completo")return s;
+  let out="";
+  for(const x of s.split(/(?<=[.!?…])\s+/).slice(0,max)){if(out&&(out+x).length>chars)break;out+=x+" "}
+  return out.trim();
+}
+let speakId=0,utts=[],speakTimer=null,voiceOverride=null;
+function stopSpeech(){speakId++;clearInterval(speakTimer);utts=[];speechSynthesis.cancel()}
+function chunks(txt,max=130){ // pedaços curtos (cada um dura poucos segundos): o Chrome corta falas longas
+  const out=[];let cur="";
+  const push=p=>{if(cur&&(cur+" "+p).length>max){out.push(cur);cur=p}else cur=cur?cur+" "+p:p};
+  for(const f of txt.split(/(?<=[.!?…])\s+/)){
+    if(f.length<=max){push(f);continue}
+    for(const g of f.split(/(?<=[,;:])\s+/)){
+      let r=g;
+      while(r.length>max){const i=r.lastIndexOf(" ",max),k=i>40?i:max;push(r.slice(0,k).trim());r=r.slice(k).trim()}
+      if(r)push(r);
+    }
+  }
+  if(cur)out.push(cur);return out;
+}
+function say(t,kind="reply",force=false){
+  if(!speak&&!force){state="idle";return}
+  const full=kind==="brief"; // o briefing é lido por inteiro (sem símbolos); respostas e comandos seguem o modo "essencial"
+  const txt=speakable(t,full?9999:kind==="cmd"?2:3,full?1e7:kind==="cmd"?200:320);
+  if(!txt){state="idle";return}
+  stopSpeech();const my=speakId,parts=chunks(txt);
+  setTimeout(()=>{ // pausa curta depois do cancel(): o Chrome às vezes ignora um speak() colado nele
+    if(my!==speakId)return;
+    try{speechSynthesis.resume()}catch(e){}
+    // Todos os pedaços entram na fila do navegador de uma vez. Não dependo do evento "terminou" (o Chrome às vezes
+    // não o dispara) e guardo as falas em `utts` para o navegador não descartá-las no meio.
+    utts=parts.map(p=>utter(p));
+    utts.forEach(u=>speechSynthesis.speak(u));
+    state="talk";clearInterval(speakTimer);
+    speakTimer=setInterval(()=>{ // quando a fila esvazia, a HERO volta ao estado parado
+      if(my!==speakId){clearInterval(speakTimer);return}
+      if(!speechSynthesis.speaking&&!speechSynthesis.pending){clearInterval(speakTimer);utts=[];state="idle"}
+    },400);
+  },80);
+}
+
+// ---------- comandos de voz ----------
+const norm=t=>t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+const PAGEKEYS=[["chat",/chat|conversa/],["brief",/briefing|painel/],["hist",/historico/],["logs",/logs|registros/],["conf",/configurac|ajustes/]];
+const HELP=`Comandos de voz (no modo contínuo, diga “HERO” antes):
+• desligar / ligar as mãos
+• abrir chat, briefing, histórico, logs ou configurações
+• próxima página · página anterior
+• gerar briefing · ler o resumo · atualizar o painel
+• nova conversa
+• adicionar tarefa … · quais são minhas tarefas
+• aumentar / diminuir zoom · zoom normal
+• ampliar / reduzir a câmera
+• falar mais rápido / mais devagar · parar de falar
+• ligar / desligar a leitura em voz alta
+• tema verde, ciano ou âmbar
+• que horas são · que dia é hoje`;
+const CMDS=[
+ [/(desativar|desligar|desabilitar|encerrar|parar|pausar) .*(maos|mao|gestos|camera)/,()=>{handStop();return "Controle por mãos desligado."}],
+ [/\b(ativar|ligar|habilitar|iniciar|liga) .*(maos|mao|gestos|camera)/,()=>{handStart();return "Ligando o controle por mãos."}],
+ [/(ampliar|aumentar) .*camera/,()=>{$("#camBox").classList.add("big");$("#camSize").textContent="Reduzir";return "Câmera ampliada."}],
+ [/(reduzir|diminuir) .*camera/,()=>{$("#camBox").classList.remove("big");$("#camSize").textContent="Ampliar";return "Câmera reduzida."}],
+ [/(desativar|desligar|parar|encerrar) .*escuta/,()=>{contStop();return "Escuta contínua desligada."}],
+ [/\b(ativar|ligar|iniciar) .*escuta/,()=>{contStart();return "Escuta contínua ligada. Diga HERO antes de cada comando."}],
+ [/(ler|leia|ouvir|fale) .*(resumo|briefing)/,()=>{if(lastSummary)say(lastSummary,"brief",true);else runBriefing("Briefing do dia",true);return ""}],
+ [/(atualizar|recarregar) .*(painel|briefing|dados)/,()=>{go("brief");loadDash(true);return "Atualizando o painel."}],
+ [/(proxima|seguinte) (pagina|tela)/,()=>{swipePage(1);return ""}],
+ [/(pagina|tela) anterior|voltar pagina/,()=>{swipePage(-1);return ""}],
+ [/^(abrir|abra|ir para|ir pra|va para|va pra|mostrar|mostre|exibir|ver|voltar para|voltar ao|voltar a) /,n=>{
+   const p=PAGEKEYS.find(([k,r])=>r.test(n));if(!p)return false;go(p[0]);return "Abrindo "+TITLES[p[0]].replace("// ","")+"."}],
+ [/(nova conversa|novo chat|limpar .*conversa|comecar de novo)/,()=>{$("#newchat").click();go("chat");return "Nova conversa."}],
+ [/^(adicionar|adicione|criar|crie|anotar|anote|nova) (uma |a )?tarefa/,async(n,raw)=>{
+   const t=raw.replace(/^.*?tarefa\s*(de|para|:|chamada)?\s*/i,"").trim();
+   if(!t)return "Qual é a tarefa?";
+   await post("/api/tasks",{text:t});if(cur==="brief")loadDash(false);return "Tarefa adicionada: "+t+"."}],
+ [/(minhas|quais|listar|ler|leia) .*tarefas/,async()=>{
+   const t=(await (await fetch("/api/tasks")).json()).filter(x=>!x.done);
+   return t.length?`Você tem ${t.length} tarefa${t.length>1?"s":""}: `+t.map(x=>x.text).join(", ")+".":"Você não tem tarefas pendentes."}],
+ [/(aumentar|ampliar|mais) .*zoom|zoom (in|mais)/,()=>{setZoom((S.ui_zoom||1)+.1);return "Zoom "+Math.round(S.ui_zoom*100)+"%."}],
+ [/(diminuir|reduzir|menos) .*zoom|zoom (out|menos)/,()=>{setZoom((S.ui_zoom||1)-.1);return "Zoom "+Math.round(S.ui_zoom*100)+"%."}],
+ [/zoom (normal|padrao|100)|(resetar|normal|padrao) .*zoom/,()=>{setZoom(1);return "Zoom normal."}],
+ [/\b(tema|cor)\b.*\b(ciano|azul|verde|ambar|laranja|amarelo)\b/,n=>{
+   const th=/verde/.test(n)?"verde":/ambar|laranja|amarelo/.test(n)?"ambar":"ciano";
+   document.documentElement.dataset.theme=th;saveMerge({theme:th});return "Tema "+(th==="ambar"?"âmbar":th)+"."}],
+ [/(falar|fale|voz) .*(rapido|depressa)/,()=>{const r=Math.min(1.6,(S.voice_rate||1)+.2);saveMerge({voice_rate:r});return "Falando mais rápido."}],
+ [/(falar|fale|voz) .*(devagar|lento|lenta)/,()=>{const r=Math.max(.6,(S.voice_rate||1)-.2);saveMerge({voice_rate:r});return "Falando mais devagar."}],
+ [/^(para|pare|parar|chega|silencio|cala|calar)( de falar| a voz)?$|(parar|para|pare) de falar/,()=>{stopSpeech();state="idle";return ""}],
+ [/(desativar|desligar|silenciar) .*(voz|leitura|fala)/,()=>{setSpeak(false);return "Leitura automática desligada."}],
+ [/\b(ativar|ligar|habilitar) .*(voz|leitura|fala)/,()=>{setSpeak(true);return "Leitura automática ligada."}],
+ [/(ajuda|quais comandos|lista de comandos|comandos de voz|o que voce faz)/,()=>({chat:HELP,msg:"Mostrei a lista de comandos na tela."})],
+ [/que horas sao|^horas$/,()=>"São "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+"."],
+ [/que dia (e|eh) hoje|qual (e )?a data/,()=>"Hoje é "+new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})+"."]
+];
+function cmdLabel(src){
+  const m=[[/maos/,"Mãos"],[/escuta/,"Escuta contínua"],[/zoom/,"Zoom"],[/tema/,"Tema"],[/tarefa/,"Tarefas"],[/camera/,"Câmera"],
+    [/ajuda|comandos/,"Ajuda"],[/resumo|briefing|painel/,"Briefing"],[/pagina|tela/,"Páginas"],[/abrir|abra/,"Navegação"],
+    [/conversa|chat/,"Conversa"],[/voz|leitura|falar|fale|rapido|devagar|silencio/,"Voz"],[/horas|dia/,"Informações"]];
+  const f=m.find(([r])=>r.test(src));return f?f[1]:"Outros";
+}
+async function tryCommand(raw){
+  const n=norm(raw);if(!n)return null;
+  if(n.split(" ").length>10&&!/tarefa/.test(n))return null; // frases longas vão para a IA
+  for(const [re,h] of CMDS){
+    if(re.test(n)){const r=await h(n,raw);if(r!==false&&r!==undefined){lastCmdName=cmdLabel(re.source);return r}}
+  }
+  return null;
+}
+
+// ---------- escuta contínua (palavra de ativação: HERO) ----------
+let contOn=false,contRec=null,armed=0;
+function contStart(){
+  if(!SR){toast("Reconhecimento de voz não suportado. Use Chrome ou Edge.",3000);return}
+  if(contOn)return;contOn=true;$("#ear").classList.add("on");$("#ear").setAttribute("aria-pressed",true);
+  const r=new SR();r.lang="pt-BR";r.continuous=true;r.interimResults=false;contRec=r;
+  r.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal||speechSynthesis.speaking)continue; // ignora a própria voz da HERO
+      const t=e.results[i][0].transcript.trim(),m=t.match(/\b(herói|heroi|hero)\b[\s,.:!?]*(.*)$/i),now=Date.now();
+      if(m){if(m[2].trim())send(m[2],true);else{armed=now+6000;toast("Pois não?",1800);say("Pois não?","cmd",true)}}
+      else if(now<armed){armed=0;send(t,true)}
+    }
+  };
+  r.onend=()=>{if(contOn)setTimeout(()=>{try{r.start()}catch(e){}},250)};
+  r.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){contStop();toast("Permissão do microfone negada.",3000)}};
+  try{r.start()}catch(e){}
+  toast("Escuta contínua ligada. Diga HERO e o comando.",2600);
+}
+function contStop(){contOn=false;try{contRec&&contRec.stop()}catch(e){}$("#ear").classList.remove("on");$("#ear").setAttribute("aria-pressed",false)}
+$("#ear").onclick=()=>contOn?contStop():contStart();
+
+// ---------- painel do briefing ----------
+function kpi(label,big,sub){const k=el("div",null,"kpi");k.append(el("span",label),el("b",big),el("small",sub));return k}
+const dayLabel=(d,today)=>d===today?"hoje":d===new Date(Date.now()+864e5).toISOString().slice(0,10)?"amanhã":d.slice(8)+"/"+d.slice(5,7);
+function renderDash(d,tasks=[]){
+  const k=$("#kpis");k.innerHTML="";
+  const ag=d.agenda,em=d.emails,w=d.weather,nw=d.news;
+  const agToday=ag?ag.filter(e=>e.day===d.today):[];
+  k.append(kpi("agenda",ag==null?"—":agToday.length?`${agToday.length}`:"Livre",ag==null?"Não configurada":agToday.length?`Próximo: ${agToday[0].time} ${agToday[0].title}`:"Nada hoje"));
+  k.append(kpi("prioridade de e-mails",em==null?"—":`${em.attention.length}`,em==null?"Não configurado":`${em.info.length} informativos · ${em.noise.length} filtrados`));
+  k.append(kpi("radar",nw==null?"—":`${nw.length}`,nw==null?"Desligado":d.keywords?d.keywords.split(",").length+" assunto(s) monitorado(s)":"Sem filtro de assunto"));
+  const ex=S.weather_extra&&w&&w.hum!=null?` · umidade ${w.hum}% · vento ${w.wind} km/h · UV ${w.uv}`:"";
+  k.append(kpi("clima",w==null?"—":w.error?"Erro":`${w.tmin}°–${w.tmax}°`,w==null?"Desligado":w.error||`${w.city} · ${w.rain}% de chuva${ex}`));
+  const pend=tasks.filter(t=>!t.done).length;
+  k.append(kpi("tarefas",`${pend}`,`${tasks.length-pend} concluída(s)`));
+  const al=$("#agendaList");al.innerHTML="";
+  if(!ag||!ag.length)al.append(el("li",ag==null?"Adicione um endereço iCal em Configurações.":"Livre."));
+  else ag.forEach(e=>{const li=el("li",e.title);li.append(el("small",`  ${dayLabel(e.day,d.today)} · ${e.time}`));al.append(li)});
+  const ml=$("#mailList");ml.innerHTML="";
+  if(!em)ml.append(el("p","Configure o e-mail no arquivo .env (veja Configurações).","hint"));
+  else[["attention","Requer atenção"],["info","Informativos"],["noise","Ruído"]].forEach(([key,name])=>{
+    ml.append(el("b",`${name} (${em[key].length})`));const ul=el("ul",null,"list");
+    em[key].forEach(m=>{const li=el("li",m.subject||"(sem assunto)");li.append(el("small"," — "+m.from));ul.append(li)});ml.append(ul)});
+  const ng=$("#newsGrid");ng.innerHTML="";
+  const cats={};(nw||[]).forEach(n=>(cats[n.cat]=cats[n.cat]||[]).push(n));
+  Object.entries(cats).forEach(([c,items])=>{
+    const card=el("div",null,"card");card.append(el("h3",c));const ul=el("ul",null,"list");
+    items.forEach(n=>{const li=el("li");if(/^https?:/.test(n.link)){const a=el("a",n.title);a.href=n.link;a.target="_blank";a.rel="noopener noreferrer";li.append(a)}else li.textContent=n.title;ul.append(li)});
+    card.append(ul);ng.append(card)});
+}
+let lastDash=null;
+async function loadDash(force){
+  $("#briefDate").textContent=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+  try{
+    const [d,t]=await Promise.all([api("/api/dashboard"+(force?"?force=true":"")),api("/api/tasks")]);
+    lastDash=d;renderDash(d,t);renderTasks(t);
+  }catch(e){$("#kpis").textContent="Falha ao carregar o painel: "+e.message}
+}
+function renderTasks(t){
+  const box=$("#taskList");box.innerHTML="";
+  if(!t.length)box.append(el("p","Sem tarefas. Adicione a primeira acima.","hint"));
+  t.forEach(x=>{
+    const row=el("div",null,"item"+(x.done?" done":""));
+    const cb=el("input");cb.type="checkbox";cb.checked=!!x.done;cb.setAttribute("aria-label","Concluir tarefa");
+    cb.onchange=async()=>{await fetch(`/api/tasks/${x.id}/toggle`,{method:"POST"});loadDash(false)};
+    const del=el("button","Remover","pill");del.onclick=async()=>{await fetch("/api/tasks/"+x.id,{method:"DELETE"});loadDash(false)};
+    row.append(cb,el("span",x.text,"grow"),del);box.append(row);
+  });
+}
+$("#taskAdd").onclick=async()=>{const v=$("#taskIn").value.trim();if(!v)return;$("#taskIn").value="";await post("/api/tasks",{text:v});loadDash(false)};
+$("#taskIn").onkeydown=e=>{if(e.key==="Enter")$("#taskAdd").click()};
+$("#refresh").onclick=()=>loadDash(true);
+$("#toConf").onclick=()=>go("conf");
+$("#genNow").onclick=async()=>{
+  $("#sumOut").textContent="Gerando...";
+  try{const r=await fetch("/api/briefing");const j=await r.json();if(!r.ok)throw new Error(j.detail);
+    lastSummary=j.text;$("#sumOut").textContent=j.text;$("#hearIt").style.display="";loadDash(false)}
+  catch(e){$("#sumOut").textContent="Falha: "+e.message}
+};
+$("#hearIt").onclick=()=>say(lastSummary,"brief",true);
+
+// ---------- configurações ----------
+function applySettings(s){
+  S=s;document.documentElement.dataset.theme=s.theme;
+  $("#model").textContent=`${s.provider} · ${s.model}`;$("#greet").textContent=greeting();
+  $("#mailNote").textContent=s.email_configured?"Conta de e-mail configurada no .env. A HERO apenas lê as mensagens: não envia, não responde e não marca como lidas."
+    :"Para ativar, preencha EMAIL_ADDRESS e EMAIL_APP_PASSWORD (senha de app) no arquivo .env e reinicie o servidor. A HERO apenas lê as mensagens e nunca envia, responde ou marca como lidas.";
+  if(USER&&!USER.is_admin)$("#mailNote").textContent="A triagem de e-mail só está disponível para o administrador desta HERO.";
+  setSpeak(s.read_aloud);setZoom(s.ui_zoom||1,false);
+  $("#hSens").value=s.hand_sens;$("#hSmooth").value=s.hand_smooth;setFilters();
+  clearInterval(timer);if(s.refresh_minutes>0)timer=setInterval(()=>{if(cur==="brief")loadDash(true)},s.refresh_minutes*60000);
+}
+function fillConf(){
+  const v=(id,x)=>$(id).value=x,c=(id,x)=>$(id).checked=!!x;
+  v("#s_city",S.city);v("#s_count",S.news_count);v("#s_feeds",S.feeds.join("\n"));v("#s_kw",S.keywords);
+  c("#s_weather",S.include_weather);c("#s_wextra",S.weather_extra);c("#s_news",S.include_news);c("#s_agenda",S.include_agenda);
+  v("#s_agdays",S.agenda_days);v("#s_ical",S.ical_urls.join("\n"));c("#s_email",S.include_email);c("#s_emunread",S.email_unread_only);
+  v("#s_emlimit",S.email_limit);v("#s_refresh",S.refresh_minutes);v("#s_detail",S.detail);c("#s_read",S.read_aloud);c("#s_auto",S.auto_open);
+  v("#s_theme",["verde","ambar"].includes(S.theme)?S.theme:"ciano");c("#s_hands",S.hands_auto);
+  v("#s_nick",S.nickname);v("#s_tone",S.tone);c("#s_focus",S.include_focus);c("#s_tasks",S.include_tasks);v("#s_autotime",S.auto_time);v("#s_rate",S.voice_rate);fillVoices();v("#s_voice",S.voice_name||"");v("#s_speech",S.speech_mode||"essencial");
+}
+const lines=id=>$(id).value.split("\n").map(x=>x.trim()).filter(Boolean);
+$("#saveSet").onclick=async()=>{
+  const body={city:$("#s_city").value.trim()||"Rio de Janeiro",include_weather:$("#s_weather").checked,weather_extra:$("#s_wextra").checked,
+    include_news:$("#s_news").checked,news_count:+$("#s_count").value||4,feeds:lines("#s_feeds"),keywords:$("#s_kw").value,
+    include_agenda:$("#s_agenda").checked,agenda_days:+$("#s_agdays").value||1,ical_urls:lines("#s_ical"),
+    include_email:$("#s_email").checked,email_unread_only:$("#s_emunread").checked,email_limit:+$("#s_emlimit").value||15,
+    refresh_minutes:+$("#s_refresh").value||0,detail:$("#s_detail").value,read_aloud:$("#s_read").checked,auto_open:$("#s_auto").checked,
+    theme:$("#s_theme").value,hands_auto:$("#s_hands").checked,nickname:$("#s_nick").value,tone:$("#s_tone").value,
+    include_focus:$("#s_focus").checked,include_tasks:$("#s_tasks").checked,auto_time:$("#s_autotime").value,voice_rate:+$("#s_rate").value||1,voice_name:$("#s_voice").value,speech_mode:$("#s_speech").value};
+  try{await api("/api/settings",jsonOpt({...S,...body}));applySettings({...S,...body});$("#toast").textContent="Salvo"}
+  catch(e){$("#toast").textContent="Não consegui salvar: "+e.message}
+  setTimeout(()=>$("#toast").textContent="",3500);
+};
+$("#cancelSet").onclick=()=>{fillConf();go("brief")};
+async function loadLogs(){
+  const l=await (await fetch("/api/logs")).json();$("#logOut").innerHTML="";
+  l.forEach(x=>{const d=el("div",null,"log");d.append(el("b",x.t),el("span",x.msg));$("#logOut").append(d)});
+}
+setInterval(()=>{ // briefing automático no horário escolhido
+  if(!S.auto_time)return;
+  try{const n=new Date();if(n.toTimeString().slice(0,5)===S.auto_time&&localStorage.heroAuto!==n.toDateString()){localStorage.heroAuto=n.toDateString();runBriefing()}}catch(e){}
+},30000);
+
+// ---------- controle por mãos ----------
+const MP="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const MODEL="https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+class OneEuro{ // filtro que suaviza o tremor sem atrasar movimentos rápidos
+  constructor(){this.mc=1.2;this.b=8;this.dc=1;this.x=null}
+  a(te,fc){const r=2*Math.PI*fc*te;return r/(r+1)}
+  f(x,t){
+    if(this.x==null){this.x=x;this.dx=0;this.t=t;return x}
+    const te=Math.max(t-this.t,1e-3);this.t=t;
+    this.dx+=((x-this.x)/te-this.dx)*this.a(te,this.dc);
+    this.x+=(x-this.x)*this.a(te,this.mc+this.b*Math.abs(this.dx));return this.x;
+  }
+  reset(){this.x=null}
+}
+const Hand={on:false,lm:null,stream:null,x:innerWidth/2,y:innerHeight/2,lastVT:-1,
+ fx:new OneEuro(),fy:new OneEuro(),pinch:[false,false],cand:"other",cn:0,dg:"other",mode:"",prev:null,
+ pinching:false,pStart:0,drag:false,acc:{x:0,y:0},grab:null,noClick:false,skipRelease:false,hist:[],lastSwipe:0,zoom:null,hover:null,stats:{t0:0,clicks:0,swipes:0,zooms:0,drags:0,scrolls:0}};
+function setFilters(){const mc=3-2.5*(S.hand_smooth??.5);[Hand.fx,Hand.fy].forEach(f=>f.mc=mc)}
+const stat=t=>$("#handStat").textContent=t;
+function flushHands(){ // envia o resumo da sessão para o relatório mensal
+  const st=Hand.stats;if(!st.t0)return;
+  const sec=Math.round((Date.now()-st.t0)/1000);
+  if(sec>=3){try{navigator.sendBeacon("/api/events",new Blob([JSON.stringify({kind:"hands",seconds:sec,clicks:st.clicks,swipes:st.swipes,zooms:st.zooms,drags:st.drags,scrolls:st.scrolls})],{type:"application/json"}))}catch(e){}}
+  Hand.stats={t0:Hand.on?Date.now():0,clicks:0,swipes:0,zooms:0,drags:0,scrolls:0};
+}
+addEventListener("pagehide",flushHands);
+function toast(t,ms=1100){const e=$("#htoast");e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,ms)}
+function setHandUI(on){
+  $("#camBox").hidden=!on;$("#hcur").hidden=!on;
+  $("#handBtn").classList.toggle("on",on);$("#handBtn").setAttribute("aria-pressed",on);
+  $("#handBtn").textContent=on?"Mãos: ligado":"Mãos: desligado";
+}
+async function handStart(){
+  if(Hand.on)return;
+  setHandUI(true);stat("Pedindo acesso à câmera...");
+  try{
+    Hand.stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:"user"}});
+    const v=$("#cam");v.srcObject=Hand.stream;await v.play();
+    if(!Hand.lm){
+      stat("Carregando modelo de mãos...");
+      const mod=await import(MP+"/+esm");
+      const files=await mod.FilesetResolver.forVisionTasks(MP+"/wasm");
+      const opts=d=>({baseOptions:{modelAssetPath:MODEL,delegate:d},runningMode:"VIDEO",numHands:2,
+        minHandDetectionConfidence:.6,minHandPresenceConfidence:.6,minTrackingConfidence:.6});
+      try{Hand.lm=await mod.HandLandmarker.createFromOptions(files,opts("GPU"))}
+      catch(e){Hand.lm=await mod.HandLandmarker.createFromOptions(files,opts("CPU"))}
+    }
+    Hand.on=true;Hand.stats.t0=Date.now();stat("Procurando mão...");handLoop();
+  }catch(e){
+    const msg=e.name==="NotAllowedError"?"Permissão da câmera negada.":e.name==="NotFoundError"?"Nenhuma câmera encontrada.":"Não foi possível iniciar: "+e.message;
+    handStop();$("#camBox").hidden=false;stat(msg);setTimeout(()=>{if(!Hand.on)$("#camBox").hidden=true},5000);
+  }
+}
+function handStop(){
+  Hand.on=false;flushHands();if(Hand.stream)Hand.stream.getTracks().forEach(t=>t.stop());Hand.stream=null;
+  if(Hand.hover)Hand.hover.classList.remove("hh");Hand.hover=null;setHandUI(false);
+}
+$("#handBtn").onclick=()=>Hand.on?handStop():handStart();
+$("#handOff").onclick=handStop;
+$("#camSize").onclick=()=>{const b=$("#camBox").classList.toggle("big");$("#camSize").textContent=b?"Reduzir":"Ampliar"};
+$("#hSens").oninput=e=>{S.hand_sens=+e.target.value;clearTimeout($("#hSens").t);$("#hSens").t=setTimeout(()=>saveMerge({}),700)};
+$("#hSmooth").oninput=e=>{S.hand_smooth=+e.target.value;setFilters();clearTimeout($("#hSmooth").t);$("#hSmooth").t=setTimeout(()=>saveMerge({}),700)};
+addEventListener("keydown",e=>{if(e.key==="Escape"&&Hand.on)handStop()});
+
+function handLoop(){
+  if(!Hand.on)return;
+  const v=$("#cam");
+  if(v.readyState>=2&&v.currentTime!==Hand.lastVT){
+    Hand.lastVT=v.currentTime;
+    try{
+      const all=Hand.lm.detectForVideo(v,performance.now()).landmarks||[];
+      drawHands(all,v);all.length?onHands(all):onLost();Hand.errs=0;
+    }catch(e){
+      if((Hand.errs=(Hand.errs||0)+1)>=5){handStop();toast("Controle por mãos interrompido por erro: "+e.message,4500);return}
+    }
+  }
+  requestAnimationFrame(handLoop);
+}
+function drawHands(all,v){
+  const cv=$("#camfx");if(cv.width!==v.videoWidth&&v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight}
+  const W=cv.width,H=cv.height,c=cv.getContext("2d");c.clearRect(0,0,W,H);
+  const col=getComputedStyle(document.documentElement).getPropertyValue("--rgb").trim();
+  c.strokeStyle=`rgb(${col})`;c.fillStyle=`rgb(${col})`;c.lineWidth=2;
+  all.forEach(L=>{
+    CONN.forEach(([a,b])=>{c.beginPath();c.moveTo(L[a].x*W,L[a].y*H);c.lineTo(L[b].x*W,L[b].y*H);c.stroke()});
+    L.forEach(p=>{c.beginPath();c.arc(p.x*W,p.y*H,3,0,7);c.fill()});
+  });
+}
+function scrollerAt(x,y,axis="y"){
+  let e=document.elementFromPoint(x,y);
+  while(e&&e!==document.body){
+    const s=getComputedStyle(e);
+    if(axis==="y"&&/(auto|scroll)/.test(s.overflowY)&&e.scrollHeight>e.clientHeight)return e;
+    if(axis==="x"&&/(auto|scroll)/.test(s.overflowX)&&e.scrollWidth>e.clientWidth)return e;
+    e=e.parentElement;
+  }
+  return null;
+}
+function info(L,i){ // lê o formato da mão
+  const d=(a,b)=>Math.hypot(L[a].x-L[b].x,L[a].y-L[b].y),w=d(0,9)||1,ratio=d(4,8)/w;
+  if(Hand.pinch[i]){if(ratio>.42)Hand.pinch[i]=false}else if(ratio<.28)Hand.pinch[i]=true;
+  const ex=(t,p)=>d(0,t)>d(0,p)*1.05,f=[ex(8,6),ex(12,10),ex(16,14),ex(20,18)];
+  let g="other";
+  if(f[0]&&!f[1]&&!f[2]&&!f[3])g="point";
+  else if(f[0]&&f[1]&&!f[2]&&!f[3])g="scroll";
+  else if(f.every(Boolean))g="palm";
+  else if(!f.some(Boolean))g="fist";
+  return{g,pinch:Hand.pinch[i],p:{x:(L[5].x+L[9].x)/2,y:(L[5].y+L[9].y)/2},pm:{x:(L[4].x+L[8].x)/2,y:(L[4].y+L[8].y)/2}};
+}
+function debounce(g){ // só troca de gesto depois de 3 quadros iguais
+  if(g===Hand.cand)Hand.cn++;else{Hand.cand=g;Hand.cn=1}
+  if(Hand.cn>=3)Hand.dg=g;return Hand.dg;
+}
+function onLost(){
+  stat("Procurando mão...");$("#hcur").style.opacity=.3;
+  Hand.prev=null;Hand.pinching=false;Hand.pinch=[false,false];Hand.hist=[];Hand.fx.reset();Hand.fy.reset();Hand.mode="";
+  if(Hand.zoom){Hand.zoom=null;Hand.stats.zooms++;saveMerge({})}
+}
+function swipePage(dir){
+  const i=PAGES.indexOf(cur),n=Math.min(PAGES.length-1,Math.max(0,i+dir));
+  if(n===i){toast(dir>0?"Última página":"Primeira página");return}
+  go(PAGES[n]);toast(TITLES[PAGES[n]].replace("// ",""));
+}
+const clampX=x=>Math.min(innerWidth-1,Math.max(0,x)),clampY=y=>Math.min(innerHeight-1,Math.max(0,y));
+function onHands(all){
+  const now=performance.now(),cu=$("#hcur"),A=all.map((L,i)=>info(L,i));cu.style.opacity=1;
+  // zoom: duas mãos em pinça
+  if(A.length===2&&A[0].pinch&&A[1].pinch){
+    const dist=Math.hypot(A[0].pm.x-A[1].pm.x,A[0].pm.y-A[1].pm.y);
+    if(!Hand.zoom)Hand.zoom={d0:dist||.01,z0:S.ui_zoom||1};
+    setZoom(Hand.zoom.z0*dist/Hand.zoom.d0,false);
+    Hand.skipRelease=true;Hand.pinching=false;Hand.prev=null;cu.className="zoom";stat("Zoom "+Math.round(S.ui_zoom*100)+"%");return;
+  }
+  if(Hand.zoom){Hand.zoom=null;Hand.stats.zooms++;saveMerge({})}
+  const a=A[0],mode=a.pinch?"pinch":debounce(a.g);
+  if(mode!==Hand.mode){Hand.prev=null;Hand.hist=[];Hand.mode=mode;if(mode==="scroll")Hand.stats.scrolls++}
+  const t=now/1000,fx=Hand.fx.f(a.p.x,t),fy=Hand.fy.f(a.p.y,t);
+  let dx=0,dy=0;if(Hand.prev){dx=fx-Hand.prev.x;dy=fy-Hand.prev.y}Hand.prev={x:fx,y:fy};
+  const mult=.6+Math.min(Math.hypot(dx,dy)*45,1.5),sens=S.hand_sens||1.8;
+  const sdx=-dx*innerWidth*sens*mult,sdy=dy*innerHeight*sens*mult*1.15; // x espelhado
+  let cls="",label="";
+  if(mode==="pinch"){
+    if(!Hand.pinching){Hand.pinching=true;Hand.pStart=now;Hand.drag=false;Hand.acc={x:0,y:0};Hand.noClick=Hand.skipRelease;
+      Hand.grab=scrollerAt(Hand.x,Hand.y)||scrollerAt(Hand.x,Hand.y,"x")}
+    Hand.acc.x+=sdx;Hand.acc.y+=sdy;
+    if(!Hand.drag&&Math.hypot(Hand.acc.x,Hand.acc.y)>34)Hand.drag=true;
+    if(Hand.drag&&Hand.grab)Hand.grab.scrollBy(-sdx,-sdy);
+    cls="pinch";label=Hand.drag?"Arrastando":"Pinça";
+  }else{
+    if(Hand.pinching){ // soltou a pinça
+      Hand.pinching=false;if(Hand.drag)Hand.stats.drags++;
+      if(!Hand.noClick){
+        if(!Hand.drag&&now-Hand.pStart<900)doClick(Hand.x,Hand.y);
+        else if(Hand.drag&&Math.abs(Hand.acc.x)>200&&Math.abs(Hand.acc.x)>2*Math.abs(Hand.acc.y)&&!(Hand.grab&&Hand.grab.scrollWidth>Hand.grab.clientWidth))
+          {Hand.stats.swipes++;swipePage(Hand.acc.x<0?1:-1)}
+      }
+    }
+    Hand.skipRelease=false;
+    if(mode==="point"){Hand.x=clampX(Hand.x+sdx);Hand.y=clampY(Hand.y+sdy);label="Apontando"}
+    else if(mode==="scroll"){const sc=scrollerAt(Hand.x,Hand.y);if(sc)sc.scrollBy(0,-sdy*(S.hand_scroll||1)*1.4);cls="scroll";label="Rolagem"}
+    else if(mode==="palm"){
+      cls="pause";label="Palma: deslize para o lado";
+      Hand.hist.push({t:now,x:a.p.x});Hand.hist=Hand.hist.filter(h=>now-h.t<350);
+      const dxn=Hand.hist[Hand.hist.length-1].x-Hand.hist[0].x;
+      if(Math.abs(dxn)>.22&&now-Hand.lastSwipe>900){Hand.lastSwipe=now;Hand.hist=[];Hand.stats.swipes++;swipePage(dxn<0?1:-1)} // câmera não espelhada: x diminui para a direita
+    }
+    else{cls="pause";label=mode==="fist"?"Pausa":"Gesto não reconhecido"}
+  }
+  stat(label);cu.className=cls;cu.style.transform=`translate(${Hand.x}px,${Hand.y}px)`;
+  const tg=document.elementFromPoint(Hand.x,Hand.y),c=tg&&tg.closest("button,a,summary,label,select,input,textarea");
+  if(c!==Hand.hover){if(Hand.hover)Hand.hover.classList.remove("hh");if(c)c.classList.add("hh");Hand.hover=c}
+}
+function doClick(x,y){
+  Hand.stats.clicks++;
+  const r=el("div",null,"rip");r.style.left=x+"px";r.style.top=y+"px";document.body.append(r);setTimeout(()=>r.remove(),520);
+  const t=document.elementFromPoint(x,y),c=t&&t.closest("button,a,summary,label,select,input,textarea");
+  if(!c)return;
+  if(c.matches("input[type=text],input[type=number],input[type=time],textarea")){c.focus();return}
+  c.click();
+}
+
+// ---------- login ----------
+let authMode="login",authSt=null;
+function authMsg(t){const m=$("#authMsg");m.textContent=t;m.hidden=!t}
+function setAuthMode(m){
+  authMode=m;const reg=m==="register",first=authSt&&!authSt.has_users;
+  $("#authTitle").textContent=reg?(first?"Criar a conta do administrador":"Criar conta"):"Entrar";
+  $("#authHint").textContent=first?"Primeiro acesso: esta conta será a do administrador e herdará os dados que já existem nesta HERO.":"";
+  $("#a_confRow").hidden=!reg;$("#a_conf").required=reg;
+  $("#a_pass").autocomplete=reg?"new-password":"current-password";
+  $("#authGo").textContent=reg?"Criar conta":"Entrar";
+  $("#authSwitch").hidden=!(authSt&&authSt.signup_open&&authSt.has_users);
+  $("#authSwitch").textContent=reg?"Já tenho conta":"Criar conta";authMsg("");
+}
+async function showAuth(){
+  if(authShown)return;authShown=true;
+  try{authSt=await (await _fetch("/api/auth/status")).json()}catch(e){authSt=null}
+  $("#auth").hidden=false;setAuthMode(authSt&&!authSt.has_users?"register":"login");$("#a_user").focus();
+}
+$("#authSwitch").onclick=()=>setAuthMode(authMode==="login"?"register":"login");
+$("#authForm").onsubmit=async e=>{
+  e.preventDefault();authMsg("");
+  const u=$("#a_user").value.trim(),p=$("#a_pass").value;
+  if(authMode==="register"&&p!==$("#a_conf").value){authMsg("As senhas não coincidem.");return}
+  $("#authGo").disabled=true;
+  try{await api("/api/auth/"+authMode,jsonOpt({username:u,password:p}));location.reload()}
+  catch(err){authMsg(err.message);$("#authGo").disabled=false}
+};
+async function logout(){try{await post("/api/auth/logout")}catch(e){}location.reload()}
+$("#logoutBtn").onclick=logout;$("#logoutBtn2").onclick=logout;
+$("#cpGo").onclick=async()=>{
+  try{await api("/api/auth/password",jsonOpt({current:$("#cp_cur").value,new:$("#cp_new").value}));
+    $("#cp_cur").value=$("#cp_new").value="";toast("Senha alterada. Outras sessões foram encerradas.",3500)}
+  catch(e){toast(e.message,4000)}
+};
+
+// ---------- relatório mensal ----------
+let repMonth=null,repList=[];
+const monthLabel=m=>{const [y,mo]=m.split("-");return new Date(+y,+mo-1,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"})};
+function fillMonths(){const sel=$("#repMonth");sel.innerHTML="";repList.forEach(m=>{const o=el("option",monthLabel(m));o.value=m;sel.append(o)});sel.value=repMonth}
+async function loadReport(refresh=false){
+  const box=$("#reportBody");box.textContent="Carregando...";
+  try{
+    if(!repList.length){const m=await api("/api/reports");repList=m.months;repMonth=repMonth||m.current;fillMonths()}
+    const d=await api(`/api/reports/${repMonth}${refresh?"?refresh=true":""}`);
+    box.innerHTML="";window.renderReport(box,d);
+  }catch(e){box.textContent="Não consegui carregar o relatório: "+e.message}
+}
+function stepMonth(dir){const i=repList.indexOf(repMonth)-dir;if(i<0||i>=repList.length)return;repMonth=repList[i];$("#repMonth").value=repMonth;loadReport()}
+$("#repMonth").onchange=e=>{repMonth=e.target.value;loadReport()};
+$("#repPrev").onclick=()=>stepMonth(-1);$("#repNext").onclick=()=>stepMonth(1);
+$("#repRefresh").onclick=()=>loadReport(true);
+$("#repDl").onclick=()=>{location.href=`/api/reports/${repMonth}/export`};
+$("#repPrint").onclick=()=>window.open(`/api/reports/${repMonth}/export?inline=1&print=1`,"_blank","noopener");
+$("#repAI").onclick=async()=>{
+  const b=$("#repAI");b.disabled=true;b.textContent="Gerando...";
+  try{await api(`/api/reports/${repMonth}/analysis`,{method:"POST"});await loadReport()}
+  catch(e){toast(e.message,4000)}
+  finally{b.disabled=false;b.textContent="Gerar análise com IA"}
+};
+function remindReport(){ // no começo do mês, avisa que o relatório do mês anterior está pronto
+  try{
+    const n=new Date();if(n.getDate()>7)return;
+    const p=new Date(n.getFullYear(),n.getMonth()-1,1),key=`${p.getFullYear()}-${String(p.getMonth()+1).padStart(2,"0")}`,flag=key+":"+USER.id;
+    if(localStorage.heroRep===flag)return;localStorage.heroRep=flag;
+    toast(`O relatório de ${monthLabel(key)} está pronto. Abra a página Relatório.`,7000);
+  }catch(e){}
+}
+
+// ---------- orbe HUD ----------
+const og=$("canvas.orb").getContext("2d");let tt=0;
+const COL={idle:null,think:[167,139,250],talk:[255,209,102],listen:[61,255,167]};
+function draw(){
+  tt+=.02;
+  if($("#chat").classList.contains("on")){
+    const rgb=getComputedStyle(document.documentElement).getPropertyValue("--rgb").trim();
+    const c=COL[state]?COL[state].join(","):rgb,col=`rgb(${c})`,amp={idle:3,think:8,talk:15,listen:11}[state],g=og;
+    g.clearRect(0,0,400,400);g.save();g.translate(200,200);g.strokeStyle=col;g.fillStyle=col;
+    g.save();g.rotate(tt*.15);
+    for(let i=0;i<72;i++){const a=i/72*6.2832,big=i%6===0;g.globalAlpha=big?.85:.35;g.lineWidth=big?2:1;
+      g.beginPath();g.moveTo(Math.cos(a)*172,Math.sin(a)*172);g.lineTo(Math.cos(a)*(172+(big?12:5)),Math.sin(a)*(172+(big?12:5)));g.stroke()}
+    g.restore();
+    for(let k=0;k<2;k++){g.save();g.rotate(tt*(k?-.4:.3));g.globalAlpha=.6;g.lineWidth=2;g.setLineDash([60,40,12,40]);
+      g.beginPath();g.arc(0,0,150-k*16,0,6.2832);g.stroke();g.restore()}
+    g.setLineDash([]);
+    for(let i=0;i<3;i++){
+      g.globalAlpha=.95-i*.25;g.lineWidth=2.5;g.beginPath();
+      for(let a=0;a<=6.30;a+=.05){
+        const r=56+i*20+Math.sin(a*(3+i)+tt*(i%2?-2:2))*amp*(1+i*.3);
+        g[a?"lineTo":"moveTo"](Math.cos(a+tt*(i?-.3:.3))*r,Math.sin(a+tt*(i?-.3:.3))*r);
+      }
+      g.closePath();g.stroke();
+    }
+    g.globalAlpha=1;g.shadowColor=col;g.shadowBlur=28;g.beginPath();g.arc(0,0,9+Math.sin(tt*3)*2,0,7);g.fill();
+    g.restore();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+async function boot(){
+  const st=await api("/api/settings");applySettings(st);
+  try{const l=await api("/api/conversations");if(l.length&&!history.length)await openConv(l[0].id)}catch(e){}
+  go("chat");
+  if(st.hands_auto)handStart();if(st.auto_open)runBriefing();
+  remindReport();
+}
+(async()=>{
+  go("chat");
+  let me;try{me=await _fetch("/api/auth/me")}catch(e){return}
+  if(me.status===401){showAuth();return}
+  USER=await me.json();
+  $("#userChip").textContent=USER.username+(USER.is_admin?" · admin":"");
+  $("#acctNote").textContent=`Conectado como ${USER.username}${USER.is_admin?" (administrador)":""}.`;
+  boot().catch(e=>toast("Falha ao iniciar: "+e.message,5000));
+})();
+</script>
+</body>
+</html>

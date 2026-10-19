@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+httpx
+feedparser
+python-dotenv
+icalendar
+recurring-ical-events
